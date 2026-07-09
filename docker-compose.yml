@@ -30,6 +30,72 @@ services:
     networks:
       - payments
 
+  api:
+    build:
+      context: .
+    image: payments-app
+    environment: &app_environment
+      DATABASE_URL: postgresql+asyncpg://payments:payments@postgres:5432/payments
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      API_KEY: ${API_KEY:-change-me}
+      WEBHOOK_TIMEOUT_SECONDS: ${WEBHOOK_TIMEOUT_SECONDS:-10}
+    command: >
+      sh -c "uv run --no-dev alembic upgrade head &&
+             uv run --no-dev uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2).read()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - payments
+
+  outbox-relay:
+    image: payments-app
+    build:
+      context: .
+    environment: *app_environment
+    command: ["uv", "run", "--no-dev", "python", "-m", "app.outbox"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - payments
+
+  consumer:
+    image: payments-app
+    build:
+      context: .
+    environment: *app_environment
+    command: ["uv", "run", "--no-dev", "python", "-m", "app.consumer"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - payments
+
 volumes:
   postgres_data:
 
