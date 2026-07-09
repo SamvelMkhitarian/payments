@@ -17,6 +17,7 @@ from app.messaging.broker import (
     payments_retry_exchange,
 )
 from app.models import Payment, PaymentStatus
+from app.services.webhook_service import send_webhook
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,8 @@ async def process_payment(payload: Mapping[str, Any]) -> PaymentStatus:
         else PaymentStatus.FAILED
     )
 
+    webhook_url: str | None = None
+    webhook_payload: dict[str, Any] | None = None
     async with async_session_factory() as session:
         async with session.begin():
             payment = await _get_payment_for_update(session, payment_id)
@@ -54,7 +57,13 @@ async def process_payment(payload: Mapping[str, Any]) -> PaymentStatus:
 
             payment.status = status
             payment.processed_at = datetime.now(UTC)
-            return status
+            webhook_url = payment.webhook_url
+            webhook_payload = _build_webhook_payload(payment)
+
+    if webhook_url is not None and webhook_payload is not None:
+        await send_webhook(webhook_url, webhook_payload)
+
+    return status
 
 
 async def publish_retry_or_dlq(payload: dict[str, Any], exc: Exception) -> None:
@@ -90,3 +99,17 @@ async def _get_payment_for_update(
     payment_id: UUID,
 ) -> Payment | None:
     return await session.get(Payment, payment_id, with_for_update=True)
+
+
+def _build_webhook_payload(payment: Payment) -> dict[str, Any]:
+    return {
+        "payment_id": str(payment.id),
+        "status": payment.status.value,
+        "amount": str(payment.amount),
+        "currency": payment.currency.value,
+        "processed_at": (
+            payment.processed_at.isoformat()
+            if payment.processed_at is not None
+            else None
+        ),
+    }
