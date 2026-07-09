@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from app.api.deps import verify_api_key
+from app.api.routes.payments import router as payments_router
 from app.db import engine
 
 
@@ -20,6 +21,7 @@ api_router = APIRouter(
     prefix="/api/v1",
     dependencies=[Depends(verify_api_key)],
 )
+api_router.include_router(payments_router)
 app.include_router(api_router)
 
 
