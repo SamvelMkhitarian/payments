@@ -1,7 +1,7 @@
 from faststream import FastStream
 
-from app.db import engine
 from app.consumer.processor import handle_payment_created
+from app.db import engine
 from app.messaging.broker import (
     broker,
     declare_topology,

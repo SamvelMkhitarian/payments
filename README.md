@@ -118,7 +118,22 @@ curl -i -X POST http://localhost:8000/api/v1/payments \
 Установить зависимости:
 
 ```bash
-uv sync
+uv sync --dev
+```
+
+Линтеры и тайпчекер (как в CI):
+
+```bash
+uv run ruff check .
+uv run flake8 .
+uv run mypy .
+uv run vulture
+```
+
+Тесты:
+
+```bash
+uv run pytest tests/ -v
 ```
 
 Поднять PostgreSQL и RabbitMQ:

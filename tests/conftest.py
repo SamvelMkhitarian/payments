@@ -9,8 +9,25 @@ from app.db import Base
 TEST_SCHEMA = "test_payments"
 
 
+async def _postgres_available() -> bool:
+    engine = create_async_engine(settings.database_url, pool_pre_ping=True)
+    try:
+        async with engine.connect() as connection:
+            await connection.execute(text("SELECT 1"))
+        return True
+    except Exception:
+        return False
+    finally:
+        await engine.dispose()
+
+
 @pytest_asyncio.fixture
 async def session_factory():
+    if not await _postgres_available():
+        pytest.skip(
+            "PostgreSQL недоступен. Запустите: docker compose up -d postgres",
+        )
+
     admin_engine = create_async_engine(settings.database_url, isolation_level="AUTOCOMMIT")
     async with admin_engine.begin() as connection:
         await connection.execute(text(f'DROP SCHEMA IF EXISTS "{TEST_SCHEMA}" CASCADE'))

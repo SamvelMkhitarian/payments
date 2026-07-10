@@ -33,7 +33,7 @@ async def run_relay(
                 except TimeoutError:
                     pass
     finally:
-        await broker.close()
+        await broker.stop()
         await engine.dispose()
 
 
