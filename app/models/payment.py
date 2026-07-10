@@ -61,3 +61,4 @@ class Payment(Base):
         default=lambda: datetime.now(UTC),
     )
     processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    webhook_delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

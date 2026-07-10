@@ -37,33 +37,48 @@ async def handle_payment_created(payload: dict[str, Any]) -> None:
 async def process_payment(payload: Mapping[str, Any]) -> PaymentStatus:
     payment_id = UUID(str(payload["payment_id"]))
 
-    await asyncio.sleep(random.uniform(*GATEWAY_DELAY_SECONDS))
-    status = (
-        PaymentStatus.SUCCEEDED
-        if random.random() < GATEWAY_SUCCESS_RATE
-        else PaymentStatus.FAILED
-    )
-
-    webhook_url: str | None = None
-    webhook_payload: dict[str, Any] | None = None
     async with async_session_factory() as session:
         async with session.begin():
             payment = await _get_payment_for_update(session, payment_id)
             if payment is None:
                 raise ValueError(f"Payment {payment_id} not found")
-
-            if payment.status != PaymentStatus.PENDING:
+            if payment.webhook_delivered_at is not None:
                 return payment.status
+            requires_gateway = payment.status == PaymentStatus.PENDING
 
-            payment.status = status
-            payment.processed_at = datetime.now(UTC)
+    if requires_gateway:
+        await asyncio.sleep(random.uniform(*GATEWAY_DELAY_SECONDS))
+        gateway_status = (
+            PaymentStatus.SUCCEEDED
+            if random.random() < GATEWAY_SUCCESS_RATE
+            else PaymentStatus.FAILED
+        )
+        async with async_session_factory() as session:
+            async with session.begin():
+                payment = await _get_payment_for_update(session, payment_id)
+                if payment is None:
+                    raise ValueError(f"Payment {payment_id} not found")
+                if payment.webhook_delivered_at is not None:
+                    return payment.status
+                if payment.status == PaymentStatus.PENDING:
+                    payment.status = gateway_status
+                    payment.processed_at = datetime.now(UTC)
+
+    async with async_session_factory() as session:
+        async with session.begin():
+            payment = await _get_payment_for_update(session, payment_id)
+            if payment is None:
+                raise ValueError(f"Payment {payment_id} not found")
+            if payment.webhook_delivered_at is not None:
+                return payment.status
             webhook_url = payment.webhook_url
             webhook_payload = _build_webhook_payload(payment)
+            result_status = payment.status
 
-    if webhook_url is not None and webhook_payload is not None:
-        await send_webhook(webhook_url, webhook_payload)
+    if await send_webhook(webhook_url, webhook_payload):
+        await _mark_webhook_delivered(payment_id)
 
-    return status
+    return result_status
 
 
 async def publish_retry_or_dlq(payload: dict[str, Any], exc: Exception) -> None:
@@ -92,6 +107,14 @@ async def publish_retry_or_dlq(payload: dict[str, Any], exc: Exception) -> None:
         persist=True,
     )
     logger.exception("Payment processing failed; sent to DLQ", exc_info=exc)
+
+
+async def _mark_webhook_delivered(payment_id: UUID) -> None:
+    async with async_session_factory() as session:
+        async with session.begin():
+            payment = await _get_payment_for_update(session, payment_id)
+            if payment is not None and payment.webhook_delivered_at is None:
+                payment.webhook_delivered_at = datetime.now(UTC)
 
 
 async def _get_payment_for_update(

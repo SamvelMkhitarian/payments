@@ -1,47 +1,12 @@
 import uuid
-from pathlib import Path
-import sys
 
 import pytest
-import pytest_asyncio
 from fastapi import HTTPException
-from sqlalchemy import func, select, text
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy import func, select
 
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
-from app.config import settings
-from app.db import Base
 from app.models import Outbox, PaymentStatus
 from app.schemas.payment import CreatePaymentRequest
 from app.services.payment_service import create_payment, get_payment
-
-TEST_SCHEMA = "test_payment_service"
-
-
-@pytest_asyncio.fixture
-async def session_factory():
-    admin_engine = create_async_engine(settings.database_url, isolation_level="AUTOCOMMIT")
-    async with admin_engine.begin() as connection:
-        await connection.execute(text(f'DROP SCHEMA IF EXISTS "{TEST_SCHEMA}" CASCADE'))
-        await connection.execute(text(f'CREATE SCHEMA "{TEST_SCHEMA}"'))
-    await admin_engine.dispose()
-
-    engine = create_async_engine(
-        settings.database_url,
-        connect_args={"server_settings": {"search_path": TEST_SCHEMA}},
-    )
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
-
-    try:
-        yield async_sessionmaker(engine, expire_on_commit=False)
-    finally:
-        await engine.dispose()
-        cleanup_engine = create_async_engine(settings.database_url, isolation_level="AUTOCOMMIT")
-        async with cleanup_engine.begin() as connection:
-            await connection.execute(text(f'DROP SCHEMA IF EXISTS "{TEST_SCHEMA}" CASCADE'))
-        await cleanup_engine.dispose()
 
 
 @pytest.mark.asyncio
