@@ -55,6 +55,7 @@ async def session_factory():
 @pytest_asyncio.fixture
 async def patched_session_factory(session_factory, monkeypatch):
     monkeypatch.setattr("app.db.async_session_factory", session_factory)
-    monkeypatch.setattr("app.consumer.processor.async_session_factory", session_factory)
+    monkeypatch.setattr("app.consumer.payment_processor.async_session_factory", session_factory)
+    monkeypatch.setattr("app.consumer.webhook_processor.async_session_factory", session_factory)
     monkeypatch.setattr("app.outbox.relay.async_session_factory", session_factory)
     return session_factory

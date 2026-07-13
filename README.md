@@ -2,7 +2,7 @@
 
 Асинхронный сервис процессинга платежей на FastAPI, PostgreSQL, RabbitMQ и FastStream.
 
-Сервис принимает запрос на создание платежа, сохраняет его в PostgreSQL, публикует событие через Outbox pattern, обрабатывает сообщение consumer-ом и отправляет webhook с результатом.
+Сервис принимает запрос на создание платежа, сохраняет его в PostgreSQL, публикует событие через Outbox pattern, обрабатывает платёж отдельным consumer-ом и отправляет webhook отдельным consumer-ом с retry через RabbitMQ.
 
 ## Быстрый Старт
 
@@ -169,12 +169,13 @@ uv run python -m app.consumer
 Основной поток обработки:
 
 ```text
-Client -> FastAPI -> PostgreSQL payments/outbox -> Outbox Relay -> RabbitMQ payments.new -> Consumer -> Webhook
+Client -> FastAPI -> PostgreSQL payments/outbox -> Outbox Relay -> RabbitMQ payments.new -> Payment Consumer -> RabbitMQ payments.webhook -> Webhook Consumer
 ```
 
 Ключевые гарантии:
 
 - `Idempotency-Key` защищает создание платежей от дублей.
 - Outbox pattern публикует события только после commit транзакции API.
-- RabbitMQ topology содержит очередь `payments.new`, retry-очереди и `payments.dlq`.
-- Consumer эмулирует платёжный шлюз, обновляет статус платежа и отправляет webhook с retry.
+- RabbitMQ topology содержит очереди `payments.new`, `payments.webhook`, retry-очереди и DLQ.
+- Payment consumer эмулирует платёжный шлюз и публикует событие на отправку webhook.
+- Webhook consumer отправляет HTTP-уведомление; retry и backoff обеспечиваются очередями RabbitMQ.
