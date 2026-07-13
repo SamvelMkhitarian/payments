@@ -1,30 +1,27 @@
 import uuid
 
 import pytest
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
+from fastapi.testclient import TestClient
 
 from app.config import settings
 from app.db import get_session
 from app.main import app
 
 
-@pytest_asyncio.fixture
-async def api_client(session_factory):
+@pytest.fixture
+def api_client(session_factory):
     async def override_get_session():
         async with session_factory() as session:
             yield session
 
     app.dependency_overrides[get_session] = override_get_session
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
+    with TestClient(app) as client:
         yield client
     app.dependency_overrides.clear()
 
 
-@pytest.mark.asyncio
-async def test_create_payment_endpoint_returns_202(api_client):
-    response = await api_client.post(
+def test_create_payment_endpoint_returns_202(api_client):
+    response = api_client.post(
         "/api/v1/payments",
         headers={
             "X-API-Key": settings.api_key,
@@ -46,9 +43,8 @@ async def test_create_payment_endpoint_returns_202(api_client):
     assert body["created_at"]
 
 
-@pytest.mark.asyncio
-async def test_create_payment_requires_idempotency_key(api_client):
-    response = await api_client.post(
+def test_create_payment_requires_idempotency_key(api_client):
+    response = api_client.post(
         "/api/v1/payments",
         headers={"X-API-Key": settings.api_key},
         json={
@@ -62,9 +58,8 @@ async def test_create_payment_requires_idempotency_key(api_client):
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
-async def test_api_requires_valid_api_key(api_client):
-    response = await api_client.get(
+def test_api_requires_valid_api_key(api_client):
+    response = api_client.get(
         f"/api/v1/payments/{uuid.uuid4()}",
         headers={"X-API-Key": "invalid"},
     )
@@ -72,9 +67,8 @@ async def test_api_requires_valid_api_key(api_client):
     assert response.status_code == 401
 
 
-@pytest.mark.asyncio
-async def test_get_payment_endpoint_returns_details(api_client):
-    create_response = await api_client.post(
+def test_get_payment_endpoint_returns_details(api_client):
+    create_response = api_client.post(
         "/api/v1/payments",
         headers={
             "X-API-Key": settings.api_key,
@@ -89,7 +83,7 @@ async def test_get_payment_endpoint_returns_details(api_client):
     )
     payment_id = create_response.json()["payment_id"]
 
-    response = await api_client.get(
+    response = api_client.get(
         f"/api/v1/payments/{payment_id}",
         headers={"X-API-Key": settings.api_key},
     )
@@ -103,9 +97,8 @@ async def test_get_payment_endpoint_returns_details(api_client):
     assert body["idempotency_key"] == "api-get-1"
 
 
-@pytest.mark.asyncio
-async def test_get_payment_endpoint_returns_404_for_missing_payment(api_client):
-    response = await api_client.get(
+def test_get_payment_endpoint_returns_404_for_missing_payment(api_client):
+    response = api_client.get(
         f"/api/v1/payments/{uuid.uuid4()}",
         headers={"X-API-Key": settings.api_key},
     )

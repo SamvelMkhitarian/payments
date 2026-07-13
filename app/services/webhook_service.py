@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from collections.abc import Mapping
 from typing import Any
@@ -9,45 +8,33 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-MAX_WEBHOOK_ATTEMPTS = 3
-WEBHOOK_RETRY_DELAYS_SECONDS = (1.0, 2.0, 4.0)
+
+class WebhookDeliveryError(Exception):
+    """Retryable webhook delivery failure."""
 
 
-async def send_webhook(url: str, payload: Mapping[str, Any]) -> bool:
+class NonRetriableWebhookError(Exception):
+    """Webhook endpoint rejected the request without retry."""
+
+
+async def send_webhook_once(url: str, payload: Mapping[str, Any]) -> None:
     async with httpx.AsyncClient(timeout=settings.webhook_timeout_seconds) as client:
-        for attempt in range(1, MAX_WEBHOOK_ATTEMPTS + 1):
-            try:
-                response = await client.post(url, json=payload)
-            except (httpx.TimeoutException, httpx.TransportError):
-                logger.exception(
-                    "Webhook attempt %s/%s failed with transport error",
-                    attempt,
-                    MAX_WEBHOOK_ATTEMPTS,
-                )
-            else:
-                if response.is_success:
-                    logger.info("Webhook sent successfully to %s", url)
-                    return True
+        try:
+            response = await client.post(url, json=dict(payload))
+        except (httpx.TimeoutException, httpx.TransportError) as exc:
+            logger.exception("Webhook transport error for %s", url)
+            raise WebhookDeliveryError from exc
 
-                if not _should_retry_response(response):
-                    logger.warning(
-                        "Webhook rejected with non-retriable status %s",
-                        response.status_code,
-                    )
-                    return False
+    if response.is_success:
+        logger.info("Webhook sent successfully to %s", url)
+        return
 
-                logger.warning(
-                    "Webhook attempt %s/%s failed with status %s",
-                    attempt,
-                    MAX_WEBHOOK_ATTEMPTS,
-                    response.status_code,
-                )
+    if _should_retry_response(response):
+        logger.warning("Webhook failed with retriable status %s", response.status_code)
+        raise WebhookDeliveryError(f"Webhook failed with status {response.status_code}")
 
-            if attempt < MAX_WEBHOOK_ATTEMPTS:
-                await asyncio.sleep(WEBHOOK_RETRY_DELAYS_SECONDS[attempt - 1])
-
-    logger.error("Webhook delivery failed after %s attempts", MAX_WEBHOOK_ATTEMPTS)
-    return False
+    logger.warning("Webhook rejected with non-retriable status %s", response.status_code)
+    raise NonRetriableWebhookError(f"Webhook failed with status {response.status_code}")
 
 
 def _should_retry_response(response: httpx.Response) -> bool:

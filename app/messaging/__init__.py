@@ -8,6 +8,9 @@ from app.messaging.broker import (
     payments_new_queue,
     payments_retry_exchange,
     payments_retry_queues,
+    payments_webhook_dlq,
+    payments_webhook_queue,
+    webhook_retry_queues,
 )
 
 __all__ = [
@@ -20,4 +23,7 @@ __all__ = [
     "payments_new_queue",
     "payments_retry_exchange",
     "payments_retry_queues",
+    "payments_webhook_dlq",
+    "payments_webhook_queue",
+    "webhook_retry_queues",
 ]
