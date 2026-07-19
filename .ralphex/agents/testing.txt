@@ -1,0 +1,235 @@
+# Review test coverage, correctness, and production confidence.
+
+## Reviewer Boundaries
+
+- Review only tests related to this change.
+- Ignore unrelated test debt.
+- Do not require 100% coverage.
+- Do not request tests that provide no practical value.
+- Report only meaningful gaps.
+
+---
+
+## Test Coverage
+
+Verify every new feature is covered.
+
+Check:
+
+- Happy path.
+- Failure path.
+- Validation errors.
+- Boundary conditions.
+- Regression scenarios.
+
+Look for:
+
+- Untested branches.
+- Untested conditions.
+- Untested exceptions.
+- Untested business rules.
+
+---
+
+## Business Logic
+
+Verify tests validate business behavior.
+
+Reject tests that only verify:
+
+- Implementation details.
+- Private methods.
+- Internal helper functions.
+- Mock interactions instead of outcomes.
+
+Tests should prove:
+
+- Correct input.
+- Correct output.
+- Correct state changes.
+- Correct side effects.
+
+---
+
+## Error Handling
+
+Verify tests cover:
+
+- Invalid input.
+- Missing data.
+- Exceptions.
+- Database failures.
+- External API failures.
+- Timeout handling.
+- Retry behavior.
+- Permission failures.
+- Authentication failures.
+
+---
+
+## Async Code
+
+If async code exists, verify tests cover:
+
+- async endpoints.
+- async services.
+- task cancellation.
+- timeout behavior.
+- concurrent execution.
+- race conditions where applicable.
+
+---
+
+## Database
+
+Verify tests check:
+
+- Database writes.
+- Database updates.
+- Transactions.
+- Rollbacks.
+- Constraint violations.
+- Duplicate inserts.
+- Idempotency.
+
+Avoid tests that only mock the database when integration behavior is important.
+
+---
+
+## API
+
+For REST APIs verify:
+
+- Status codes.
+- Response body.
+- Validation errors.
+- Authentication.
+- Authorization.
+- Headers.
+- Pagination.
+- Filtering.
+- Sorting.
+
+For GraphQL verify:
+
+- Query results.
+- Mutation results.
+- Validation.
+- Authorization.
+- Resolver behavior.
+
+---
+
+## Background Processing
+
+If Celery, Kafka, RabbitMQ or Airflow are involved:
+
+Verify tests cover:
+
+- Successful processing.
+- Failed processing.
+- Retry.
+- Duplicate delivery.
+- Idempotency.
+- Ordering assumptions.
+- Dead-letter scenarios if applicable.
+
+---
+
+## Redis / Cache
+
+Verify tests cover:
+
+- Cache hit.
+- Cache miss.
+- Cache invalidation.
+- TTL behavior if critical.
+- Consistency after updates.
+
+---
+
+## Test Quality
+
+Reject tests that:
+
+- Always pass.
+- Assert constants instead of behavior.
+- Ignore exceptions.
+- Ignore return values.
+- Contain no meaningful assertions.
+- Test mocks instead of business logic.
+- Depend on execution order.
+
+---
+
+## Maintainability
+
+Prefer tests that are:
+
+- Independent.
+- Deterministic.
+- Easy to read.
+- Easy to extend.
+- Focused on one behavior.
+
+Reject:
+
+- Huge integration tests for trivial logic.
+- Excessive mocking.
+- Duplicate test cases.
+
+---
+
+## Production Confidence
+
+Ask yourself:
+
+"If these tests pass, would I confidently deploy this change?"
+
+If not, identify what is missing.
+
+---
+
+## False Positives
+
+Do NOT report:
+
+- Missing tests for trivial getters/setters.
+- Missing tests for framework behavior.
+- Existing uncovered code unrelated to this change.
+- Personal preferences about testing style.
+- Requests for unrealistic edge cases.
+
+---
+
+## Report Format
+
+For every confirmed issue provide:
+
+Category:
+- Coverage
+- Business Logic
+- Error Handling
+- API
+- Database
+- Async
+- Background Processing
+- Reliability
+
+Severity:
+- Critical
+- Major
+- Minor
+
+Location:
+
+Issue:
+
+Impact:
+
+Suggested Fix:
+
+Only report confirmed testing gaps.
+
+Never invent missing scenarios.
+Never report positive observations.

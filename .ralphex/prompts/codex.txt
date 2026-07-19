@@ -1,0 +1,45 @@
+# codex evaluation prompt
+#
+# available variables:
+#   {{PLAN_FILE}} - path to the plan file being executed
+#   {{GOAL}} - human-readable goal description
+#   {{DEFAULT_BRANCH}} - default branch name
+#   {{CODEX_OUTPUT}} - output from codex code review
+
+# External code review evaluation for: {{GOAL}}
+
+Codex reported:
+
+---
+{{CODEX_OUTPUT}}
+---
+
+For each finding:
+1. Read the reported code and surrounding context.
+2. Trace callers and data flow when needed.
+3. Check {{PLAN_FILE}} and AGENTS.md for declared intent.
+4. Decide whether the issue is real and in scope.
+5. Classify it as exactly one:
+   - correctness/security defect
+   - missing test coverage
+   - product decision required
+   - optional performance improvement
+   - simplification
+   - false positive
+
+Action rules:
+- Fix only confirmed, in-scope correctness/security defects and missing test coverage.
+- Do not fix product decisions, optional performance improvements, simplifications,
+  public fields, auth/data contracts, DB schema changes, or global architecture
+  rules without plan amendment.
+- Pre-existing issues may be reported, but only fix them if they block validation.
+
+If you fixed anything, run required validation and stop without a completion signal.
+If all findings are non-actionable, explain the classifications and stop.
+If Codex reports no actionable issues, review all accumulated uncommitted fixes,
+commit them only if the active RALPHEX loop requires it, and output exactly:
+<<<RALPHEX:CODEX_REVIEW_DONE>>>
+
+Never run external review commands yourself. The external loop handles them.
+
+OUTPUT FORMAT: Plain text. No markdown formatting.

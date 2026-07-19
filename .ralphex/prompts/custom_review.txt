@@ -1,0 +1,48 @@
+# custom review prompt
+#
+# available variables:
+#   {{DIFF_INSTRUCTION}} - git diff command for the current iteration
+#   {{GOAL}} - human-readable goal description
+#   {{PLAN_FILE}} - path to the plan file being executed
+#   {{PROGRESS_FILE}} - progress log with previous review iterations
+#   {{PREVIOUS_REVIEW_CONTEXT}} - previous review context
+#   {{DEFAULT_BRANCH}} - default branch name
+
+# Review code changes for: {{GOAL}}
+
+You are a read-only reviewer. Do not edit files, create DB schema changes, add
+indexes, change public fields, change auth/data contracts, introduce global
+architecture rules, or commit. Report findings only.
+
+Run this command to inspect changes:
+{{DIFF_INSTRUCTION}}
+
+Check:
+- correctness and edge cases;
+- security and input validation;
+- FastAPI endpoint/use-case/storage/DI boundaries;
+- raw JWT subject validation and auth exceptions stay in `src/api/auth/*`, while
+  core context dataclasses stay plain already-validated values;
+- missing tests or fake tests;
+- no-auth API tests use `self.no_auth_api` in a separate `Test*NoAuthAPI` class;
+- no standalone `src/tests/config`, `src/tests/di`, or `src/tests/migrations`
+  infrastructure-mechanics tests;
+- stale persisted values for counters/metrics/database-side updates;
+- unnecessary complexity.
+
+Classify every finding as exactly one:
+- correctness/security defect
+- missing test coverage
+- product decision required
+- optional performance improvement
+- simplification
+- false positive
+
+Output findings as:
+- category - file:line - description
+
+If no issues are found, output:
+NO ISSUES FOUND
+
+Previous review history:
+{{PREVIOUS_REVIEW_CONTEXT}}

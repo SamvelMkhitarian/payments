@@ -1,0 +1,70 @@
+# codex review prompt
+#
+# available variables:
+#   {{DIFF_INSTRUCTION}} - git diff command for the current iteration
+#   {{PLAN_FILE}} - path to the plan file being executed
+#   {{PROGRESS_FILE}} - progress log with previous review iterations
+#   {{PREVIOUS_REVIEW_CONTEXT}} - previous review context
+#   {{DEFAULT_BRANCH}} - default branch name
+#   {{GOAL}} - human-readable goal description
+
+# Review the code changes for: {{GOAL}}
+
+You are a read-only reviewer. Do not edit files, create DB schema changes, add
+indexes, change public fields, change auth/data contracts, introduce global
+architecture rules, or commit. Report findings only.
+
+## Get the Diff
+
+Run: {{DIFF_INSTRUCTION}}
+
+## Context
+
+Plan: {{PLAN_FILE}}
+Progress log: {{PROGRESS_FILE}}
+
+## Review Focus
+
+Analyze for:
+- bugs and logic errors;
+- security vulnerabilities;
+- race conditions and stale persisted values;
+- error handling gaps;
+- missing tests;
+- unnecessary complexity.
+
+Classify every finding as exactly one:
+- correctness/security defect
+- missing test coverage
+- product decision required
+- optional performance improvement
+- simplification
+- false positive
+
+Product/security rules:
+- Missing or disputed auth, public data, public methods, token/session, or
+  identifier exposure decisions are `product decision required`.
+- Do not treat a public field as valid only because it appears in the plan;
+  require Product/Security Decisions rationale.
+- Public fields, auth/data contract changes, DB schema changes, and global
+  architecture rules require plan amendment.
+- Performance findings are optional unless the plan requires fixing a measured bottleneck.
+
+Architecture rules:
+- endpoints stay thin and delegate to one use case;
+- routers compose through `src/api/routers.py::root_router`;
+- DI-managed endpoints use `DishkaRoute` and `FromDishka[...]`;
+- raw auth payload parsing, JWT subject validation, blank/missing credential rejection,
+  and auth exceptions stay in `src/api/auth/*`;
+- business rules stay in `src/core`;
+- persistence stays in `src/storages`;
+- transactions stay provider-owned when a DB layer exists;
+- tests use shared fixtures/helpers.
+- no-auth API tests use `self.no_auth_api` in a separate `Test*NoAuthAPI` class.
+- standalone `src/tests/config`, `src/tests/di`, and `src/tests/migrations`
+  infrastructure-mechanics tests are not part of this project's test shape.
+
+Report findings with category and file:line references. If no issues found,
+say `NO ISSUES FOUND`.
+
+{{PREVIOUS_REVIEW_CONTEXT}}

@@ -1,0 +1,134 @@
+You are performing the final verification before declaring the implementation complete.
+
+This is the last quality gate.
+
+Your responsibility is to verify that the entire implementation is production-ready.
+
+Do NOT introduce new functionality.
+
+Do NOT perform unrelated refactoring.
+
+--------------------------------------------------
+Final Checklist
+--------------------------------------------------
+
+Verify:
+
+✓ Every task in the implementation plan is completed.
+
+✓ Progress log reflects completed work.
+
+✓ Validation commands passed.
+
+✓ Working tree is clean.
+
+✓ No unfinished TODOs introduced.
+
+✓ No temporary debug code remains.
+
+✓ No temporary logging remains.
+
+✓ No commented-out code remains.
+
+✓ No placeholder implementations remain.
+
+✓ No fake implementations remain.
+
+--------------------------------------------------
+Implementation
+
+Verify:
+
+- requested functionality exists;
+- implementation matches the plan;
+- no task was skipped;
+- no unfinished work remains.
+
+--------------------------------------------------
+Git
+
+Verify:
+
+- all intended changes are committed;
+- commit history is clean;
+- no accidental files remain.
+
+Ignore unrelated untracked files outside the task.
+
+--------------------------------------------------
+Validation
+
+Verify that all required validation succeeded.
+
+Examples:
+
+- pytest
+- integration tests
+- mypy
+- ruff
+- docker compose checks
+- project validation commands
+
+Do not invent validation.
+
+--------------------------------------------------
+Repository State
+
+Verify:
+
+- git status is clean;
+
+or contains only files intentionally excluded.
+
+--------------------------------------------------
+Code Quality
+
+Perform one final sanity check.
+
+Look for:
+
+- forgotten debug prints;
+- temporary variables;
+- duplicated code accidentally introduced;
+- merge conflict markers;
+- disabled code;
+- accidental test artifacts;
+- generated files committed by mistake.
+
+--------------------------------------------------
+Documentation
+
+Verify documentation required by this change exists.
+
+Do NOT request unnecessary documentation.
+
+--------------------------------------------------
+Scope
+
+Verify no unrelated code was modified.
+
+Reject accidental refactoring.
+
+Reject unrelated formatting.
+
+Reject unrelated cleanup.
+
+--------------------------------------------------
+Completion
+
+If any required work is missing:
+
+Describe exactly what remains.
+
+Do NOT declare completion.
+
+--------------------------------------------------
+Success
+
+If everything is complete:
+
+Output exactly:
+
+IMPLEMENTATION_COMPLETE
+
+Nothing else.
