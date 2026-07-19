@@ -1,0 +1,88 @@
+# second review prompt
+# final critical/major review pass
+#
+# available variables:
+#   {{PLAN_FILE}} - path to the plan file being executed
+#   {{PROGRESS_FILE}} - task execution and review progress log
+#   {{GOAL}} - human-readable goal description
+#   {{DEFAULT_BRANCH}} - default branch name
+#   {{agent:<name>}} - executor-specific reviewer invocation
+
+# Second code review pass of: {{GOAL}}
+
+## Step 1: Get Branch Context
+
+# Run both commands:
+# - `rtk git log {{DEFAULT_BRANCH}}..HEAD --oneline`
+# - `rtk git diff {{DEFAULT_BRANCH}}...HEAD`
+
+## Step 2: Launch Review Agents
+
+# Launch these reviewer agents in parallel:
+# {{agent:quality}}
+# {{agent:implementation}}
+
+# Agents are read-only and finding-only. They must not edit files, create DB
+# schema changes, change auth/data contracts, create commits, or introduce global
+# architecture rules.
+
+# Focus only on critical and major issues.
+
+## Review Focus
+
+Verify:
+- endpoint/use-case/storage/DI boundaries declared by AGENTS.md and plan;
+- Product/Security Decisions for API/auth/user-visible data changes;
+- auth boundary placement: raw JWT subject validation and auth exceptions stay in
+  `src/api/auth/*`, while core context dataclasses stay plain domain values;
+- test coverage for modified behavior;
+- no-auth API coverage uses `self.no_auth_api` in a separate `Test*NoAuthAPI` class;
+- no standalone config/DI/migration unit-test directories for infrastructure mechanics;
+- no stale persisted values for counters/metrics/database-side updates;
+- no unrelated scope expansion.
+
+Classify every finding as exactly one:
+- correctness/security defect
+- missing test coverage
+- product decision required
+- optional performance improvement
+- simplification
+- false positive
+
+## Completion Gate
+
+Before any `<<<RALPHEX:REVIEW_DONE>>>`:
+- Confirm that every mandatory reviewer agent listed in Step 2 returned a
+  result. Missing, failed, or inconclusive mandatory reviewer output blocks
+  review success.
+- Confirm there is no unresolved blocking Product/Security Decision. Product
+  decisions are not code-fixable by the review pass.
+- Run `rtk git status --short` and require empty output.
+- Confirm current HEAD contains all review-fix changes. Uncommitted review fixes
+  are not a reproducible review result.
+
+If this review pass made any code, test, prompt, or plan-file changes:
+- Put all and only those review-fix changes in one scoped commit.
+- Verify `rtk git status --short` is empty after the commit.
+- Verify current HEAD contains the review-fix commit.
+- Stop without `<<<RALPHEX:REVIEW_DONE>>>`; the next independent critical/major
+  review pass must complete before success can be reported.
+
+Do not move or archive plan files during review completion. Plan archival belongs
+to the orchestrator.
+
+## Signal Logic
+
+# If no in-scope critical/major issues were found and the Completion Gate passed,
+# output exactly:
+# <<<RALPHEX:REVIEW_DONE>>>
+
+# If issues were found and fixed, stop without REVIEW_DONE so another review can run.
+# If a mandatory reviewer result is missing, or issues require product decisions
+# or plan amendment, output a structured verdict and put
+# <<<RALPHEX:TASK_FAILED>>> on the final line:
+# BLOCKED: <missing reviewer result | product decision required | plan amendment required>
+# - <specific unresolved blocker>
+# <<<RALPHEX:TASK_FAILED>>>
+
+# OUTPUT FORMAT: Plain text. No markdown formatting.

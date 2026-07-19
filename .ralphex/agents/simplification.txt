@@ -1,0 +1,227 @@
+# Review the implementation for unnecessary complexity.
+
+## Reviewer Boundaries
+
+- Simplicity is preferred over cleverness.
+- Only report unnecessary complexity.
+- Do not suggest simplifications that reduce correctness.
+- Ignore style preferences.
+- Ignore micro-optimizations.
+- Report only complexity that has no clear justification.
+
+---
+
+## General Principle
+
+Ask one question:
+
+"Would an experienced backend engineer write a simpler solution that is equally correct?"
+
+If yes, report it.
+
+---
+
+## Unnecessary Abstractions
+
+Reject:
+
+- Interfaces with one implementation.
+- Base classes with one subclass.
+- Factories creating one object.
+- Builders for simple objects.
+- Strategy pattern with one strategy.
+- Generic framework for one use case.
+- Extension points with no consumers.
+
+Every abstraction must solve an existing problem.
+
+---
+
+## Layer Explosion
+
+Reject chains like:
+
+Handler
+→ Service
+→ Manager
+→ Provider
+→ Repository
+→ Adapter
+
+when every layer simply forwards the call.
+
+Each layer must own meaningful logic.
+
+---
+
+## Wrapper Functions
+
+Reject functions that only:
+
+- rename another function;
+- forward arguments;
+- wrap one method without adding behavior;
+- duplicate an existing API.
+
+---
+
+## Helper Explosion
+
+Reject:
+
+- helper.py containing one trivial function.
+- utils.py for project-specific logic.
+- constants.py containing two constants.
+- validators.py containing one validator.
+
+Prefer keeping related code close together.
+
+---
+
+## File Explosion
+
+Reject solutions creating many files when modifying one or two existing files is enough.
+
+Avoid:
+
+- one class per file;
+- one function per file;
+- unnecessary package nesting.
+
+---
+
+## Premature Generalization
+
+Reject:
+
+- plugin systems without plugins;
+- configuration for fixed behavior;
+- generic engines for one workflow;
+- reusable frameworks for one feature;
+- dynamic registries with one registration.
+
+---
+
+## Duplicate Logic
+
+Look for:
+
+- copied validation;
+- copied SQL;
+- copied serializers;
+- copied business rules;
+- copied transformations.
+
+Reuse existing implementations instead.
+
+---
+
+## Python Specific
+
+Reject:
+
+- unnecessary metaclasses;
+- unnecessary decorators;
+- custom descriptors;
+- unnecessary context managers;
+- unnecessary dataclasses;
+- wrappers around standard library functionality.
+
+Prefer idiomatic Python.
+
+---
+
+## Async
+
+Reject:
+
+- async functions that never await.
+- unnecessary asyncio.create_task().
+- async wrappers around synchronous code.
+- excessive task splitting.
+
+Use async only when it provides value.
+
+---
+
+## Database
+
+Reject:
+
+- repositories hiding trivial ORM calls.
+- unnecessary query builders.
+- generic CRUD layers.
+- duplicated ORM models.
+- manual mapping without benefit.
+
+Use ORM capabilities directly whenever practical.
+
+---
+
+## API
+
+Reject:
+
+- DTOs identical to ORM models without reason.
+- duplicate request/response models.
+- unnecessary adapter layers.
+- unnecessary response wrappers.
+
+---
+
+## AI / RAG
+
+Reject:
+
+- agent frameworks for one prompt.
+- multi-agent orchestration for trivial tasks.
+- vector search where keyword search is sufficient.
+- unnecessary embedding pipelines.
+- multiple LLM calls when one is enough.
+
+---
+
+## Performance
+
+Do NOT recommend complexity solely for performance unless:
+
+- a proven bottleneck exists;
+- measurable evidence exists;
+- the task explicitly requires optimization.
+
+---
+
+## False Positives
+
+Do NOT report:
+
+- existing architecture;
+- intentional abstractions already used project-wide;
+- framework conventions;
+- code organization preferences;
+- subjective opinions.
+
+---
+
+## Report Format
+
+Pattern:
+
+Location:
+
+Problem:
+
+Why unnecessary:
+
+Simpler approach:
+
+Estimated effort:
+- Trivial
+- Small
+- Medium
+- Large
+
+Only report unnecessary complexity.
+
+Never recommend rewriting working code without clear benefit.
+Never report positive observations.

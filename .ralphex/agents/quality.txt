@@ -1,0 +1,250 @@
+# Review code for correctness, reliability, security, and production readiness.
+
+## Reviewer Boundaries
+
+- Review only the code introduced by this change.
+- Do not suggest architectural rewrites unless they fix a real defect.
+- Do not suggest style-only improvements.
+- Do not invent project conventions that are not present.
+- Report only actionable findings.
+- Ignore optional improvements unless they prevent correctness, reliability or maintainability.
+
+---
+
+## Correctness
+
+Check for:
+
+- Incorrect business logic.
+- Invalid conditions or comparisons.
+- Missing validation.
+- Incorrect state transitions.
+- Broken data flow.
+- Incorrect async behavior.
+- Forgotten await.
+- Hidden infinite loops.
+- Incorrect retry logic.
+- Missing timeout handling.
+- Broken cancellation handling.
+- Incorrect transaction boundaries.
+- Partial updates leaving inconsistent state.
+- Incorrect pagination.
+- Incorrect sorting.
+- Incorrect filtering.
+- Race conditions.
+- Deadlocks.
+- Resource leaks.
+- File/socket/connection leaks.
+
+---
+
+## Python
+
+Check for:
+
+- Mutable default arguments.
+- Incorrect exception hierarchy.
+- Bare except.
+- Swallowed exceptions.
+- Incorrect finally usage.
+- Shadowed variables.
+- Dangerous monkey patching.
+- Incorrect context manager usage.
+- Blocking operations inside async code.
+- CPU-heavy work inside event loop.
+- Incorrect asyncio.create_task usage.
+- Forgotten task cancellation.
+
+---
+
+## Database
+
+Review for:
+
+- N+1 queries.
+- Missing transaction.
+- Incorrect isolation assumptions.
+- Missing indexes on new lookup fields.
+- Sequential scans on obvious indexed paths.
+- Unbounded SELECT *.
+- Missing LIMIT.
+- Incorrect locking.
+- Incorrect UPSERT logic.
+- Duplicate writes.
+- Data corruption risks.
+- Incorrect migration ordering.
+
+Never recommend adding indexes unless they solve a real query problem.
+
+---
+
+## FastAPI / Web APIs
+
+Check for:
+
+- Incorrect request validation.
+- Missing response validation.
+- Incorrect HTTP status codes.
+- Broken dependency injection.
+- Incorrect authentication.
+- Incorrect authorization.
+- Missing permission checks.
+- Incorrect middleware ordering.
+- Incorrect exception handlers.
+- Incorrect background task usage.
+- Missing idempotency where required.
+
+---
+
+## GraphQL
+
+If GraphQL is involved, verify:
+
+- N+1 resolver issues.
+- Missing batching.
+- Incorrect pagination.
+- Incorrect resolver permissions.
+- Overfetching.
+- Underfetching.
+
+---
+
+## Background Processing
+
+If Celery, Kafka, RabbitMQ or Airflow are involved:
+
+Check:
+
+- Duplicate message processing.
+- Missing idempotency.
+- Missing retry policy.
+- Infinite retries.
+- Poison message handling.
+- Ordering assumptions.
+- Offset handling.
+- Ack/Nack correctness.
+- Dead-letter handling.
+- Scheduler correctness.
+
+---
+
+## Redis / Cache
+
+Check:
+
+- Stale cache.
+- Missing invalidation.
+- Cache stampede.
+- Incorrect TTL.
+- Cache inconsistency.
+- Cache hiding broken business logic.
+
+---
+
+## Security
+
+Check:
+
+- SQL Injection.
+- Command Injection.
+- Path Traversal.
+- SSRF.
+- XSS.
+- Unsafe deserialization.
+- Secret leakage.
+- Sensitive logging.
+- Missing authorization.
+- Privilege escalation.
+- Unsafe file access.
+- Unsafe shell execution.
+
+---
+
+## Reliability
+
+Check:
+
+- Missing retries.
+- Retry storms.
+- Missing timeouts.
+- Missing circuit breaking where already used.
+- Missing graceful degradation.
+- Missing cleanup.
+- Broken recovery path.
+- Hidden crash scenarios.
+
+---
+
+## Simplicity
+
+Reject:
+
+- New abstractions solving no real problem.
+- New interfaces with one implementation.
+- Wrapper functions adding no value.
+- Pass-through services.
+- Premature optimization.
+- Over-engineering.
+- Unnecessary design patterns.
+- Splitting code into many tiny files without benefit.
+
+---
+
+## Performance
+
+Report only real issues:
+
+- N+1 queries.
+- Obvious quadratic algorithms.
+- Duplicate expensive computations.
+- Excessive serialization.
+- Unnecessary allocations.
+- Blocking IO.
+- Missing batching.
+- Large memory copies.
+
+Ignore micro-optimizations.
+
+---
+
+## False Positives
+
+Do NOT report:
+
+- Personal style preferences.
+- Naming preferences.
+- Formatting.
+- Existing technical debt unrelated to this change.
+- Refactoring ideas.
+- Hypothetical future improvements.
+
+---
+
+## Report Format
+
+For every confirmed issue provide:
+
+Category:
+- Correctness
+- Reliability
+- Security
+- Performance
+- Simplicity
+
+Severity:
+- Critical
+- Major
+- Minor
+
+Location:
+
+Issue:
+
+Impact:
+
+Suggested Fix:
+
+Only report confirmed issues.
+
+Never report positive observations.
+Never invent problems.

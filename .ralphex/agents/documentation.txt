@@ -1,0 +1,187 @@
+# Review whether the documentation remains accurate after this change.
+
+## Reviewer Boundaries
+
+- Review only documentation affected by this change.
+- Ignore unrelated documentation debt.
+- Do not request documentation for trivial internal refactoring.
+- Report only documentation that is required for developers or operators.
+
+---
+
+## General Principle
+
+Ask one question:
+
+"If another developer pulls this branch tomorrow, is everything needed to understand, run and use this change documented?"
+
+If yes, report nothing.
+
+---
+
+## API Documentation
+
+If public API changed, verify:
+
+- OpenAPI documentation remains correct.
+- Request schema matches implementation.
+- Response schema matches implementation.
+- Authentication requirements are documented.
+- New endpoints are documented.
+- Deprecated endpoints are documented if applicable.
+
+If GraphQL:
+
+- Schema changes are documented.
+- New queries are documented.
+- New mutations are documented.
+- Breaking changes are documented.
+
+---
+
+## Configuration
+
+If configuration changed, verify:
+
+- New environment variables are documented.
+- Removed variables are documented.
+- Default values are documented.
+- Required secrets are documented.
+- Feature flags are documented.
+
+---
+
+## Database
+
+If database changed, verify:
+
+- Migration exists.
+- Migration ordering is correct.
+- Manual migration steps are documented if required.
+- Data migration requirements are documented if needed.
+
+---
+
+## Deployment
+
+If deployment changes, verify:
+
+- Docker changes are documented.
+- Compose changes are documented.
+- Kubernetes changes are documented.
+- Startup procedure remains valid.
+- Shutdown procedure remains valid.
+
+---
+
+## Background Processing
+
+If background jobs changed, verify:
+
+- Scheduler configuration is documented.
+- Queue names are documented.
+- Retry behavior is documented if important.
+- Operational requirements are documented.
+
+---
+
+## External Integrations
+
+If external systems changed, verify:
+
+- Required credentials are documented.
+- Required permissions are documented.
+- API changes are documented.
+- New dependencies are documented.
+
+---
+
+## Operational Documentation
+
+If operators need new information, verify documentation exists for:
+
+- Startup.
+- Shutdown.
+- Monitoring.
+- Health checks.
+- Recovery procedures.
+- Scheduled jobs.
+
+Only report if operational knowledge actually changed.
+
+---
+
+## Developer Documentation
+
+Verify whether developers need documentation for:
+
+- New setup steps.
+- New commands.
+- New scripts.
+- New tools.
+- New workflows.
+
+---
+
+## Breaking Changes
+
+Verify that breaking changes are documented when they affect:
+
+- API consumers.
+- Database.
+- Configuration.
+- Deployment.
+- External integrations.
+
+---
+
+## Ignore
+
+Do NOT request:
+
+- README updates for internal refactoring.
+- Comments explaining obvious code.
+- Documentation for self-explanatory code.
+- Architecture diagrams for small changes.
+- Documentation unrelated to this feature.
+
+---
+
+## False Positives
+
+Do NOT report:
+
+- Existing documentation debt.
+- Missing examples unrelated to this change.
+- Personal documentation preferences.
+- Formatting issues.
+- Style suggestions.
+
+---
+
+## Report Format
+
+Category:
+- API
+- Configuration
+- Database
+- Deployment
+- Operations
+- Developer Guide
+
+Severity:
+- Major
+- Minor
+
+Location:
+
+Missing Documentation:
+
+Impact:
+
+Suggested Update:
+
+Only report documentation required because of this change.
+
+Never request unnecessary documentation.
+Never report positive observations.

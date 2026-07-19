@@ -1,0 +1,248 @@
+# Review whether the implementation actually solves the requested problem.
+
+## Reviewer Boundaries
+
+- Review only the code introduced by this change.
+- Do not suggest refactoring unless it fixes an implementation defect.
+- Ignore style issues.
+- Ignore optional improvements.
+- Report only confirmed implementation problems.
+
+---
+
+## Requirement Coverage
+
+Verify that the implementation satisfies every stated requirement.
+
+Check for:
+
+- Missing functionality.
+- Partially implemented requirements.
+- Incorrect interpretation of requirements.
+- Hidden assumptions.
+- Missing business rules.
+- Missing validation.
+- Missing workflows.
+- Missing failure scenarios.
+
+---
+
+## Business Logic
+
+Verify:
+
+- Business rules are implemented correctly.
+- State transitions are valid.
+- Preconditions are enforced.
+- Postconditions are satisfied.
+- Side effects occur exactly once.
+- Error paths behave correctly.
+
+Look for:
+
+- Missing logic.
+- Incorrect logic.
+- Duplicate logic.
+- Impossible states.
+- Silent failures.
+
+---
+
+## API Integration
+
+Verify:
+
+- Endpoints are registered.
+- Routes are reachable.
+- Request models match implementation.
+- Response models match implementation.
+- Authentication is preserved.
+- Authorization is preserved.
+- Validation is preserved.
+
+If GraphQL:
+
+- Resolver is connected.
+- Schema is updated.
+- Permissions remain correct.
+
+---
+
+## Database Integration
+
+Verify:
+
+- Models match schema.
+- Queries return expected data.
+- Writes are atomic.
+- Transactions are correct.
+- Migrations are complete.
+- Foreign keys remain valid.
+- Constraints are preserved.
+
+Look for:
+
+- Forgotten migration.
+- Missing rollback.
+- Partial writes.
+- Incorrect joins.
+- Incorrect filters.
+
+---
+
+## Async / Background Tasks
+
+If async code exists:
+
+Verify:
+
+- await is used correctly.
+- Tasks are awaited or intentionally detached.
+- Cancellation is handled.
+- Timeouts are respected.
+
+If Celery, Kafka, RabbitMQ or Airflow exist:
+
+Verify:
+
+- Producers and consumers match.
+- Messages contain required fields.
+- Retry policy matches business requirements.
+- Duplicate processing is prevented.
+- Processing is idempotent where required.
+
+---
+
+## External Services
+
+Verify:
+
+- Correct endpoints.
+- Correct payloads.
+- Error handling.
+- Retry behavior.
+- Timeout handling.
+- Fallback behavior (only if already part of project).
+
+---
+
+## Configuration
+
+Check whether implementation requires updates to:
+
+- Environment variables.
+- Configuration files.
+- Docker.
+- Compose.
+- Kubernetes manifests.
+- Secrets.
+- Feature flags.
+
+---
+
+## Project Integration
+
+Verify the feature is fully integrated.
+
+Look for:
+
+- Missing imports.
+- Missing registrations.
+- Missing dependency injection.
+- Missing initialization.
+- Missing scheduler registration.
+- Missing router registration.
+- Missing startup/shutdown hooks.
+
+---
+
+## Backward Compatibility
+
+Check whether changes unintentionally break:
+
+- Existing API.
+- Existing database.
+- Existing clients.
+- Existing integrations.
+- Existing configuration.
+
+Ignore intentional breaking changes documented in the task.
+
+---
+
+## Edge Cases
+
+Verify implementation handles:
+
+- Empty input.
+- Null values.
+- Duplicate requests.
+- Large payloads.
+- Invalid data.
+- Timeouts.
+- Concurrent execution.
+- Partial failures.
+- Network failures.
+
+---
+
+## Production Readiness
+
+Check whether implementation introduces:
+
+- Single point of failure.
+- Missing monitoring.
+- Missing logging for important failures.
+- Missing retry.
+- Missing cleanup.
+- Hidden operational risks.
+
+Only report if required for correctness or reliability.
+
+---
+
+## False Positives
+
+Do NOT report:
+
+- Personal preferences.
+- Different architectural choices.
+- Refactoring ideas.
+- Existing technical debt.
+- Naming.
+- Formatting.
+- Possible future improvements.
+
+---
+
+## Report Format
+
+For every confirmed issue provide:
+
+Category:
+- Requirement
+- Business Logic
+- Integration
+- Database
+- API
+- Async
+- Configuration
+- Reliability
+
+Severity:
+- Critical
+- Major
+- Minor
+
+Location:
+
+Issue:
+
+Impact:
+
+Suggested Fix:
+
+Only report confirmed implementation defects.
+
+Never invent missing requirements.
+Never report positive observations.

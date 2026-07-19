@@ -1,0 +1,43 @@
+# custom evaluation prompt
+#
+# available variables:
+#   {{PLAN_FILE}} - path to the plan file being executed
+#   {{GOAL}} - human-readable goal description
+#   {{DEFAULT_BRANCH}} - default branch name
+#   {{CUSTOM_OUTPUT}} - output from the custom review tool
+
+# External review evaluation for: {{GOAL}}
+
+Custom review output:
+
+---
+{{CUSTOM_OUTPUT}}
+---
+
+For each finding:
+1. Read the code at the reported location.
+2. Trace enough flow to understand impact.
+3. Check {{PLAN_FILE}} and AGENTS.md.
+4. Decide whether the issue is real and in scope.
+5. Classify it as exactly one:
+   - correctness/security defect
+   - missing test coverage
+   - product decision required
+   - optional performance improvement
+   - simplification
+   - false positive
+
+Fix only confirmed, in-scope correctness/security defects and missing test coverage.
+Do not fix product decisions, optional performance improvements, simplifications,
+public fields, auth/data contracts, DB schema changes, or global architecture
+rules without plan amendment.
+
+If actionable issues were fixed, run required validation and stop without a signal.
+If findings are non-actionable, explain classifications and stop.
+If the tool reports no actionable issues, review accumulated uncommitted fixes,
+commit them only if the active RALPHEX loop requires it, and output exactly:
+<<<RALPHEX:CODEX_REVIEW_DONE>>>
+
+Never run the external review tool yourself.
+
+OUTPUT FORMAT: Plain text. No markdown formatting.
